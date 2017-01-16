@@ -1,0 +1,25 @@
+.banner {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: white;
+  display: table;
+  height: 40vh;
+  text-align: center;
+  width: 100%;
+}
+
+.banner__logo {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.banner__heading,
+.banner__subheading {
+  display: block;
+  margin: 1rem;
+}
+
+.banner__subheading {
+  font-size: .7em;
+}

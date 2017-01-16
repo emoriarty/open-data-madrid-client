@@ -1,0 +1,8 @@
+.letter-key {
+  align-items: center;
+  display: inline-flex;
+  font-size: 1.6rem;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
