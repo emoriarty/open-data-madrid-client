@@ -9,14 +9,16 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import getMuiTheme from 'material-ui/styles/getMuiTheme'
 import InfiniteScroll from 'react-infinite-scroller'
 import AppBar from 'material-ui/AppBar'
+import TextField from 'material-ui/TextField'
 import axios from 'axios'
 import Container from './components/Container'
 import Banner from './components/Banner'
 import Content, {
   ContentHeadline,
-  ContentAlphabeticalList
+  ContentList
 } from './components/Content'
 import Wrapper from './components/Wrapper'
+import { debounce } from 'throttle-debounce'
 
 
 class App extends Component {
@@ -32,10 +34,15 @@ class App extends Component {
           primary1Color: '#2196F3'
         }
       }),
+      searchWord: '',
       urlCatalog: 'http://127.0.0.1:10010',
       urlItems: 'http://127.0.0.1:10010/catalog-items'
     }
+
+    this.getDebouncedItems = debounce(400, this.getItems.bind(this))
     this.getItems = this.getItems.bind(this)
+    this.handleSearch = this.handleSearch.bind(this)
+    this.handleScroll = this.handleScroll.bind(this)
   }
 
   componentDidMount() {
@@ -43,31 +50,44 @@ class App extends Component {
       .then(response => {
         this.setState({ catalog: response.data });
       })
-    this.getItems()
+    this.handleScroll()
   }
 
-  getItems() {
-    const { currentPage, items, urlItems } = this.state
+  getItems(params) {
+    const { currentPage, items, searchWord, urlItems } = this.state
 
-    console.log(currentPage)
-    axios.get(urlItems, {
-        params: {
-          page: currentPage
-        }
+    return axios.get(urlItems, {
+        params: { page: currentPage, search: searchWord }
       })
       .then(response => {
         const { data } = response
-        const result = concat(items, data.items)
+        const result = currentPage > 0
+          ? concat(items, data.items)
+          : data.items
         
-        data.more
-          ? this.setState({
-              currentPage: inc(currentPage),
-              items: result
-            })
-          : this.setState({
-              hasMoreItems: false
-            })
+        this.setState({
+          items: result
+        })
+        !data.more && this.setState({
+          hasMoreItems: false
+        })
+        return data
       })
+  }
+
+  handleSearch (ev) {
+    this.setState({
+      currentPage: 0,
+      searchWord: ev.target.value
+    })
+    this.getDebouncedItems()
+  }
+
+  handleScroll () {
+    this.getItems()
+      .then(() => this.setState({
+        currentPage: inc(this.state.currentPage)
+      }))
   }
   
   render() {
@@ -87,14 +107,18 @@ class App extends Component {
             <Content>
               <Wrapper>
                 <ContentHeadline text="Catálogo" />
+                <TextField
+                  fullWidth={true}
+                  hintText="Filtra la lista por nombre"
+                  onChange={this.handleSearch} />
               </Wrapper>
               <InfiniteScroll
                 hasMore={hasMoreItems}
                 initialLoad={false}
-                loadMore={this.getItems}
+                loadMore={this.handleScroll}
                 loader={<div style={{textAlign: 'center'}}>cargando...</div>}
                 pageStart={0}>
-                <ContentAlphabeticalList items={items} />
+                <ContentList items={items} />
               </InfiniteScroll>
             </Content>
           </Container>

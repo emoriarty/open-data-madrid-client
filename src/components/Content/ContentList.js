@@ -28,4 +28,8 @@ ContentList.propTypes = {
   items: PropTypes.array
 }
 
+ContentList.defaultProps = {
+  items: []
+}
+
 export default ContentList
