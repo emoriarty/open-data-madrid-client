@@ -66,10 +66,8 @@ class App extends Component {
           : data.items
         
         this.setState({
+          hasMoreItems: data.more,
           items: result
-        })
-        !data.more && this.setState({
-          hasMoreItems: false
         })
         return data
       })
